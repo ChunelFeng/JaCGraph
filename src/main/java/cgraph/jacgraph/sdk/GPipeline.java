@@ -18,19 +18,21 @@ public class GPipeline {
 
     private List<GElement> elements = new ArrayList<>();
     private AtomicInteger finishedElementSize = new AtomicInteger(0);
-    private CStatus cStatus = new CStatus();
+    private CStatus curStatus = new CStatus();
+    private GParamManager paramManager = new GParamManager();
 
     /**
      * 注册元素信息
+     *
      * @param element 当前节点
      * @param depends 依赖节点
-     * @param name 当前节点名称
-     * @param loop 当前节点执行次数
-     * @return
+     * @param name    当前节点名称
+     * @param loop    当前节点执行次数
      * @param <T>
+     * @return
      */
-    public <T extends GElement> CStatus registerGElement(T element, List<GElement> depends, String name, int loop){
-        element.addElementInfo(depends, name, loop);
+    public <T extends GElement> CStatus registerGElement(T element, List<GElement> depends, String name, int loop) {
+        element.addElementInfo(depends, name, loop, paramManager);
         elements.add(element);
         return new CStatus();
     }
@@ -55,7 +57,7 @@ public class GPipeline {
         return new CStatus();
     }
 
-    public CStatus run() throws InterruptedException {
+    public CStatus run() {
         setup();
         executeAll();
         reset();
@@ -78,13 +80,13 @@ public class GPipeline {
     }
 
 
-    private void executeOne(GElement element){
-        if (!cStatus.isOk()) {
+    private void executeOne(GElement element) {
+        if (!curStatus.isOk()) {
             return;
         }
         CompletableFuture.runAsync(() -> {
             try {
-                cStatus.reset(element.fatRun());
+                curStatus.reset(element.fatRun());
                 for (GElement afterElement : element.runBefore) {
                     boolean flag = afterElement.decrementDepend();
                     if (!flag) {
@@ -107,32 +109,42 @@ public class GPipeline {
         });
     }
 
-    private void reset() throws InterruptedException {
-       synchronized (this){
-           this.wait();
-       }
+    private void reset() {
+        synchronized (this) {
+            try {
+                this.wait();
+            } catch (InterruptedException exception) {
+                curStatus.setErrorCode(ErrorCode.FAIL.getCode());
+                curStatus.setErrorInfo("reset error");
+            }
+        }
     }
 
-    private void resetFinishedElementSize(){
+    private void resetFinishedElementSize() {
         this.finishedElementSize = new AtomicInteger(0);
     }
 
-    public CStatus process(int runSize) throws InterruptedException {
+    public CStatus process(int runSize) {
         // init
         CStatus initStatus = init();
-        if(!initStatus.isOk()){
+        if (!initStatus.isOk()) {
             return initStatus;
         }
 
         // 多次执行，有一次失败，则失败
         CStatus runStatus = new CStatus();
         for (int i = 0; i < runSize; i++) {
+            runStatus = paramManager.setup();
+            if (!runStatus.isOk()) {
+                break;
+            }
             runStatus = run();
-            if(!runStatus.isOk()){
+            paramManager.reset(runStatus);
+            if (!runStatus.isOk()) {
                 break;
             }
         }
-        if(!runStatus.isOk()){
+        if (!runStatus.isOk()) {
             destroy();
             return runStatus;
         }

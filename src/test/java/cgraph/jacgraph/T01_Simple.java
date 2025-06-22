@@ -32,7 +32,6 @@ public class T01_Simple {
     }
 
 
-
     public static class MyNode1 extends GNode{
         @Override
         public CStatus run() throws InterruptedException {
