@@ -19,6 +19,14 @@ public class CStatus {
      */
     private String errorInfo;
 
+    public CStatus() {
+    }
+
+    public CStatus(Integer errorCode, String errorInfo) {
+        this.errorCode = errorCode;
+        this.errorInfo = errorInfo;
+    }
+
     public Integer getErrorCode() {
         return errorCode;
     }
