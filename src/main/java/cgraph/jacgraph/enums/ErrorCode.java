@@ -1,7 +1,7 @@
 package cgraph.jacgraph.enums;
 
 /**
- * @author chunqi.lch
+ * @author Choo.lch
  * @date 2025/6/2 17:52
  * @Description:
  */

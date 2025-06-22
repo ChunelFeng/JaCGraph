@@ -3,7 +3,7 @@ package cgraph.jacgraph.entity;
 import cgraph.jacgraph.enums.ErrorCode;
 
 /**
- * @author chunqi.lch
+ * @author Choo.lch
  * @date 2025/6/2 17:50
  * @Description:
  */
@@ -18,6 +18,14 @@ public class CStatus {
      * 错误信息
      */
     private String errorInfo;
+
+    public CStatus() {
+    }
+
+    public CStatus(Integer errorCode, String errorInfo) {
+        this.errorCode = errorCode;
+        this.errorInfo = errorInfo;
+    }
 
     public Integer getErrorCode() {
         return errorCode;

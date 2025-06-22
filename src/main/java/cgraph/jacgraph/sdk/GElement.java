@@ -1,13 +1,14 @@
 package cgraph.jacgraph.sdk;
 
 import cgraph.jacgraph.entity.CStatus;
+import cgraph.jacgraph.enums.ErrorCode;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @author chunqi.lch
+ * @author Choo.lch
  * @date 2025/6/2 17:58
  * @Description:
  */
@@ -20,6 +21,8 @@ public abstract class GElement {
     private int loop = 1;
     private AtomicInteger leftDependCounter = new AtomicInteger(0);
 
+    private GParamManager paramManager;
+
     protected CStatus init() {
         return new CStatus();
     }
@@ -28,9 +31,10 @@ public abstract class GElement {
         return new CStatus();
     }
 
-    protected CStatus addElementInfo(List<GElement> depends, String name, int loop) {
+    protected CStatus addElementInfo(List<GElement> depends, String name, int loop, GParamManager paramManager) {
         this.name = name;
         this.loop = loop;
+        this.paramManager = paramManager;
 
         // 记录节点依赖
         if (null != depends && !depends.isEmpty()) {
@@ -67,6 +71,20 @@ public abstract class GElement {
 
     public String getName(){
         return this.name;
+    }
+
+    public CStatus createGParam(GParam param, String key) {
+        if (null == paramManager) {
+            return new CStatus(ErrorCode.FAIL.getCode(), "paramManager is null");
+        }
+        return paramManager.create(param, key);
+    }
+
+    public GParam getGParam(String key) {
+        if (null == paramManager) {
+            return null;
+        }
+        return paramManager.get(key);
     }
 
 }

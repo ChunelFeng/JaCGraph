@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * @author chunqi.lch
+ * @author Choo.lch
  * @date 2025/6/2 20:13
  * @Description:
  */
@@ -30,7 +30,6 @@ public class T01_Simple {
 
         pipeline.process(1);
     }
-
 
 
     public static class MyNode1 extends GNode{
